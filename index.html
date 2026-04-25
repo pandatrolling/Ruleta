@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ruleta Wonka</title>
+<style>
+*{box-sizing:border-box}
+body{
+margin:0;
+min-height:100vh;
+font-family:Arial,Helvetica,sans-serif;
+background:radial-gradient(circle at top,#3a134f,#06020b 70%);
+color:white;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:16px;
+overflow-x:hidden;
+}
+.app{
+width:100%;
+max-width:760px;
+text-align:center;
+}
+h1{
+margin:0 0 10px;
+font-size:34px;
+color:#ffd86b;
+text-shadow:0 3px 0 #5a3000,0 0 18px #000;
+}
+.stage{
+position:relative;
+width:min(94vw,720px);
+aspect-ratio:1/1;
+margin:0 auto;
+filter:drop-shadow(0 24px 40px rgba(0,0,0,.75));
+}
+.wheel{
+position:absolute;
+inset:0;
+width:100%;
+height:100%;
+object-fit:contain;
+border-radius:50%;
+transition:transform 5.6s cubic-bezier(.08,.78,.08,1);
+}
+.pointer{
+position:absolute;
+left:50%;
+top:-1.5%;
+transform:translateX(-50%);
+width:70px;
+height:92px;
+z-index:8;
+filter:drop-shadow(0 8px 12px rgba(0,0,0,.8));
+animation:pointerBounce 1.2s ease-in-out infinite;
+}
+.pointer::before{
+content:"";
+position:absolute;
+left:50%;
+top:0;
+transform:translateX(-50%);
+width:70px;
+height:85px;
+background:linear-gradient(145deg,#ffe27a,#b56a00);
+clip-path:polygon(50% 0,100% 38%,66% 38%,50% 100%,34% 38%,0 38%);
+border-radius:10px;
+box-shadow:inset 0 0 0 4px #6b3c00, inset 0 0 14px #fff8;
+}
+.pointer::after{
+content:"";
+position:absolute;
+left:50%;
+top:18px;
+transform:translateX(-50%);
+width:28px;
+height:28px;
+border-radius:50%;
+background:radial-gradient(circle at 30% 25%,#ffb7ff,#6f139a 70%);
+box-shadow:0 0 10px #ff7cff,inset 0 0 8px #fff8;
+}
+@keyframes pointerBounce{
+0%,100%{translate:0 0}
+50%{translate:0 -5px}
+}
+.lightRing{
+position:absolute;
+inset:0;
+border-radius:50%;
+pointer-events:none;
+z-index:6;
+}
+.light{
+position:absolute;
+width:12px;
+height:12px;
+border-radius:50%;
+background:#ffe68a;
+box-shadow:0 0 10px #ffd84d,0 0 20px #ffb700;
+animation:blink .8s infinite alternate;
+}
+.light:nth-child(even){animation-delay:.35s}
+@keyframes blink{
+from{opacity:.3;filter:brightness(.75)}
+to{opacity:1;filter:brightness(1.7)}
+}
+.controls{
+margin-top:16px;
+display:flex;
+justify-content:center;
+gap:10px;
+flex-wrap:wrap;
+}
+button{
+border:0;
+border-radius:18px;
+padding:16px 26px;
+font-size:20px;
+font-weight:900;
+background:linear-gradient(180deg,#ffdc6b,#c78300);
+color:#3b2200;
+box-shadow:0 8px 0 #704100,0 15px 28px rgba(0,0,0,.45);
+cursor:pointer;
+}
+button:active{
+transform:translateY(4px);
+box-shadow:0 4px 0 #704100;
+}
+.result{
+margin:16px auto 0;
+max-width:600px;
+background:rgba(15,5,25,.85);
+border:1px solid rgba(255,255,255,.16);
+border-radius:20px;
+padding:16px;
+font-size:26px;
+font-weight:900;
+box-shadow:0 16px 35px rgba(0,0,0,.45);
+}
+.note{
+margin:14px auto 0;
+max-width:640px;
+font-size:14px;
+line-height:1.45;
+color:#d6c6e8;
+opacity:.9;
+}
+@media(max-width:480px){
+h1{font-size:28px}
+.pointer{width:54px;height:74px}
+.pointer::before{width:54px;height:68px}
+.pointer::after{width:22px;height:22px;top:14px}
+.result{font-size:22px}
+button{font-size:18px;padding:14px 22px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<h1>Ruleta Wonka</h1>
+<div class="stage">
+<img id="wheel" class="wheel" src="assets/wheel-base-premium.png" alt="Ruleta Wonka">
+<div class="lightRing" id="lightRing"></div>
+<div class="pointer"></div>
+</div>
+<div class="controls">
+<button onclick="spin()">GIRAR RULETA</button>
+</div>
+<div class="result" id="result">Listo para girar</div>
+<div class="note">
+Esta es una versión base correcta: usa una imagen premium completa para evitar deformaciones. 
+Luego se puede separar por capas para volverla dinámica sin destruir el diseño.
+</div>
+</div>
+
+<script>
+const premios=[
+"Golden Ticket",
+"Chocolate Wonka",
+"Gaseosa Pepsi",
+"Gaseosa Coca Cola",
+"Gaseosa 7UP",
+"Agua San Luis",
+"Papas Lay's",
+"Caramelos sorpresa",
+"Pochoclos",
+"Premio sorpresa",
+"Cupón descuento"
+];
+
+let rotation=0;
+let spinning=false;
+
+function createLights(){
+const ring=document.getElementById("lightRing");
+ring.innerHTML="";
+const total=44;
+for(let i=0;i<total;i++){
+const light=document.createElement("div");
+light.className="light";
+const a=(i/total)*Math.PI*2;
+const r=48.5;
+light.style.left=(50+Math.cos(a)*r)+"%";
+light.style.top=(50+Math.sin(a)*r)+"%";
+light.style.transform="translate(-50%,-50%)";
+ring.appendChild(light);
+}
+}
+
+function spin(){
+if(spinning) return;
+spinning=true;
+
+const winnerIndex=Math.floor(Math.random()*premios.length);
+const degreesPerPrize=360/premios.length;
+const target=360-(winnerIndex*degreesPerPrize + degreesPerPrize/2);
+
+rotation += 1800 + target;
+document.getElementById("wheel").style.transform=`rotate(${rotation}deg)`;
+document.getElementById("result").textContent="Girando...";
+
+setTimeout(()=>{
+spinning=false;
+document.getElementById("result").textContent="Ganó: "+premios[winnerIndex];
+},5700);
+}
+
+createLights();
+</script>
+</body>
+</html>

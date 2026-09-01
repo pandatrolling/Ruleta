@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ruleta Wonka</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Arial,Helvetica,sans-serif;background:radial-gradient(circle at top,#3a134f,#06020b 70%);color:white;padding:16px;display:flex;justify-content:center}.app{width:100%;max-width:760px;text-align:center}h1{margin:8px 0 12px;font-size:34px;color:#ffd86b;text-shadow:0 3px 0 #5a3000,0 0 18px #000}.stage{position:relative;width:min(94vw,720px);aspect-ratio:1/1;margin:0 auto;filter:drop-shadow(0 24px 40px rgba(0,0,0,.75))}.wheel{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border-radius:50%;transition:transform 5.6s cubic-bezier(.08,.78,.08,1);transform-origin:center center}.emptyWheel{position:absolute;inset:0;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:28px;background:radial-gradient(circle,#3c1357,#12051e);border:10px solid #d9a335;box-shadow:inset 0 0 35px #000,0 0 30px #facc1540;font-weight:900;font-size:22px;color:#ffd86b}.pointer{display:none;position:absolute;left:50%;top:-1.5%;transform:translateX(-50%);width:70px;height:92px;z-index:8;filter:drop-shadow(0 8px 12px rgba(0,0,0,.8));animation:pointerBounce 1.2s ease-in-out infinite}.pointer::before{content:"";position:absolute;left:50%;top:0;transform:translateX(-50%);width:70px;height:85px;background:linear-gradient(145deg,#ffe27a,#b56a00);clip-path:polygon(50% 0,100% 38%,66% 38%,50% 100%,34% 38%,0 38%);border-radius:10px;box-shadow:inset 0 0 0 4px #6b3c00,inset 0 0 14px #fff8}.pointer::after{content:"";position:absolute;left:50%;top:18px;transform:translateX(-50%);width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#ffb7ff,#6f139a 70%);box-shadow:0 0 10px #ff7cff,inset 0 0 8px #fff8}@keyframes pointerBounce{50%{translate:0 -5px}}.lightRing{position:absolute;inset:0;border-radius:50%;pointer-events:none;z-index:6}.light{position:absolute;width:12px;height:12px;border-radius:50%;background:#ffe68a;box-shadow:0 0 10px #ffd84d,0 0 20px #ffb700;animation:blink .8s infinite alternate}.light:nth-child(even){animation-delay:.35s}@keyframes blink{from{opacity:.3;filter:brightness(.75)}to{opacity:1;filter:brightness(1.7)}}.controls{margin-top:16px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap}button,.fileBtn{border:0;border-radius:18px;padding:15px 22px;font-size:18px;font-weight:900;background:linear-gradient(180deg,#ffdc6b,#c78300);color:#3b2200;box-shadow:0 8px 0 #704100,0 15px 28px rgba(0,0,0,.45);cursor:pointer;display:inline-block}button:active,.fileBtn:active{transform:translateY(4px);box-shadow:0 4px 0 #704100}.secondary{background:linear-gradient(180deg,#3b82f6,#1d4ed8);color:white;box-shadow:0 8px 0 #143f8f,0 15px 28px rgba(0,0,0,.45)}.danger{background:linear-gradient(180deg,#ef4444,#991b1b);color:white;box-shadow:0 8px 0 #5f1010,0 15px 28px rgba(0,0,0,.45)}input[type=file]{display:none}.result{margin:16px auto 0;max-width:600px;background:rgba(15,5,25,.85);border:1px solid rgba(255,255,255,.16);border-radius:20px;padding:16px;font-size:25px;font-weight:900;box-shadow:0 16px 35px rgba(0,0,0,.45)}.panel{margin:18px auto 0;max-width:680px;background:rgba(15,5,25,.85);border:1px solid rgba(255,255,255,.16);border-radius:20px;padding:16px;text-align:left}.panel h2{margin:0 0 10px;font-size:22px;color:#ffd86b}.panel p{margin:6px 0;line-height:1.45;color:#ddd}.small{font-size:13px;color:#c9b8df}.configLabel{display:block;margin-top:12px;margin-bottom:5px;font-weight:900;color:#ffd86b}.numberInput,textarea{width:100%;border-radius:14px;border:1px solid rgba(255,255,255,.18);background:#12051e;color:#fff;padding:12px;font-size:16px;outline:none}textarea{min-height:190px;resize:vertical;line-height:1.35;font-family:Arial,Helvetica,sans-serif}.previewList{margin-top:10px;padding:12px;border-radius:14px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.12);color:#ddd;font-size:14px;max-height:180px;overflow:auto}.previewList ol{margin:6px 0 0 22px;padding:0}.warning{color:#ffcc66;font-weight:bold}.ok{color:#7CFF9B;font-weight:bold}
+
+.headerCabecera{
+width:100%;
+margin:0 auto 10px auto;
+}
+.headerCabecera img{
+width:100%;
+height:auto;
+display:block;
+object-fit:contain;
+border-radius:0 0 18px 18px;
+}
+#pinOverlay{
+position:absolute;
+left:50%;
+top:-4%;
+transform:translateX(-50%);
+width:72px;
+max-width:18%;
+z-index:20;
+pointer-events:none;
+filter:drop-shadow(0 8px 12px rgba(0,0,0,.8));
+}
+#adminPanel{
+display:none;
+}
+.adminToggleWrap{
+margin:18px auto 0;
+max-width:680px;
+text-align:center;
+}
+
+
+#pinOverlay.pinHit{
+animation:pinHitAnim .12s ease-out;
+}
+@keyframes pinHitAnim{
+0%{transform:translateX(-50%) rotate(0deg);}
+45%{transform:translateX(-50%) rotate(-16deg) translateY(2px);}
+100%{transform:translateX(-50%) rotate(0deg);}
+}
+
+
+
+#celebrationLayer{
+position:fixed;
+inset:0;
+pointer-events:none;
+overflow:hidden;
+z-index:9999;
+}
+.confettiPiece{
+position:absolute;
+bottom:-22px;
+width:8px;
+height:14px;
+border-radius:3px;
+opacity:.96;
+animation:confettiBurstUp var(--dur) cubic-bezier(.16,.82,.22,1) forwards;
+transform:translate3d(0,0,0) rotate(var(--rot));
+box-shadow:0 0 10px rgba(255,255,255,.35);
+}
+@keyframes confettiBurstUp{
+0%{
+transform:translate3d(0,0,0) rotate(var(--rot)) scale(.9);
+opacity:1;
+}
+35%{
+transform:translate3d(var(--x1),var(--y1),0) rotate(calc(var(--rot) + 260deg)) scale(1);
+opacity:1;
+}
+72%{
+opacity:1;
+}
+100%{
+transform:translate3d(var(--x2),var(--y2),0) rotate(calc(var(--rot) + 900deg)) scale(.7);
+opacity:0;
+}
+}
+.winFlash{animation:winFlashAnim .55s ease-out 2;}
+@keyframes winFlashAnim{
+0%{filter:drop-shadow(0 24px 40px rgba(0,0,0,.75)) brightness(1);}
+50%{filter:drop-shadow(0 0 34px rgba(255,215,0,.95)) brightness(1.32);}
+100%{filter:drop-shadow(0 24px 40px rgba(0,0,0,.75)) brightness(1);}
+}
+50%{filter:drop-shadow(0 0 34px rgba(255,215,0,.95)) brightness(1.32);}
+100%{filter:drop-shadow(0 24px 40px rgba(0,0,0,.75)) brightness(1);}
+}
+
+
+/* Ajuste visual:
+   El pin queda fijo arriba.
+   La ruleta, luces y ruleta fantasma bajan proporcionalmente
+   para que el pin no tape demasiado el círculo.
+*/
+:root{
+--wheelDrop:4vw;
+}
+.wheel,
+.emptyWheel,
+.lightRing{
+top:var(--wheelDrop) !important;
+bottom:auto !important;
+height:100% !important;
+}
+.stage{
+margin-bottom:var(--wheelDrop) !important;
+}
+
+
+/* Baja SOLO la ruleta, luces y ruleta fantasma. El pin NO se mueve. */
+:root{
+  --wheelDrop:4vw;
+}
+
+.wheel,
+.emptyWheel,
+.lightRing{
+  transform: translateY(var(--wheelDrop));
+}
+
+
+/* botón delante */
+.controls{
+position:relative;
+z-index:30;
+}
+.result,
+#adminPanel{
+position:relative;
+z-index:30;
+}
+
+</style>
+</head>
+<body>
+<div id="celebrationLayer"></div>
+<div class="app">
+<div class="headerCabecera"><img src="cabecera.png" alt="Cabecera" onerror="if(!this.dataset.fallback){this.dataset.fallback=1;this.src='cabecera.Png';}"></div>
+
+
+<div class="stage">
+<img id="pinOverlay" src="pin.png" alt="Pin">
+<div id="emptyWheel" class="emptyWheel">Sube aquí tu imagen premium de la ruleta</div>
+<img id="wheel" class="wheel" style="display:none" alt="Ruleta">
+<div class="lightRing" id="lightRing"></div>
+</div>
+<div class="controls">
+<button onclick="spin()">GIRAR RULETA</button>
+</div>
+<div class="result" id="result">Listo para girar</div>
+
+<div class="adminToggleWrap">
+<button class="secondary" onclick="toggleAdminPanel()">ADMINISTRACIÓN</button>
+</div>
+<div id="adminPanel">
+<div class="panel">
+<h2>Administración de imagen</h2>
+<div class="controls" style="justify-content:flex-start">
+<label class="fileBtn secondary">Subir imagen de ruleta<input id="imageInput" type="file" accept="image/*" onchange="loadWheelImage(event)"></label>
+<button class="danger" onclick="removeImage()">Quitar imagen</button>
+</div>
+</div>
+
+
+<div class="panel">
+<h2>Configuración de sectores y premios</h2>
+<p class="small">Pega la lista en el mismo orden de la imagen: empieza arriba y avanza en sentido horario. Puedes separar por salto de línea o coma.</p>
+<label class="configLabel" for="sectorCount">Cantidad de sectores</label>
+<p class="small"><b>Sectores válidos entre 1 y 50:</b> 1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 15, 18, 20, 24, 30, 36, 40, 45, 50</p>
+<input id="sectorCount" class="numberInput" type="number" min="1" placeholder="Ejemplo: 14" oninput="previewConfig()">
+<label class="configLabel" for="prizeText">Lista de premios</label>
+<textarea id="prizeText" oninput="previewConfig()" placeholder="Ejemplo:&#10;Golden Ticket&#10;Ticket gratis&#10;Para la próxima&#10;Gaseosa KR&#10;Doble ticket gratis"></textarea>
+<div class="controls" style="justify-content:flex-start">
+<button class="secondary" onclick="savePrizeConfig()">Guardar configuración</button>
+<button class="danger" onclick="clearPrizeConfig()">Borrar configuración</button>
+</div>
+<div id="preview" class="previewList"></div>
+</div>
+</div>
+</div>
+<script>
+let rotation=0, spinning=false;
+const defaultPremios=["Golden Ticket","Ticket gratis","Gaseosa KR","Para la próxima","Ticket gratis","Doble ticket gratis","Golden Ticket","Ticket gratis","Para la próxima","Kit de adaptadores","Ticket gratis","Para la próxima","Ticket gratis","Doble ticket gratis"];
+let premios=[...defaultPremios];
+
+function toggleAdminPanel(){
+const panel=document.getElementById("adminPanel");
+panel.style.display=panel.style.display==="none"||panel.style.display===""?"block":"none";
+}
+
+function createLights(){
+ const ring=document.getElementById("lightRing"); ring.innerHTML="";
+ for(let i=0;i<44;i++){const light=document.createElement("div");light.className="light";const a=(i/44)*Math.PI*2,r=48.5;light.style.left=(50+Math.cos(a)*r)+"%";light.style.top=(50+Math.sin(a)*r)+"%";light.style.transform="translate(-50%,-50%)";ring.appendChild(light);}
+}
+function loadSavedImage(){
+const saved=localStorage.getItem("ruleta_imagen_base");
+const wheelEl=document.getElementById("wheel");
+const emptyEl=document.getElementById("emptyWheel");
+
+if(saved){
+wheelEl.src=saved;
+wheelEl.style.display="block";
+emptyEl.style.display="none";
+}
+}
+
+function loadWheelImage(event){
+const file=event.target.files[0];
+if(!file)return;
+
+if(!file.type.startsWith("image/")){
+alert("Selecciona un archivo de imagen válido.");
+return;
+}
+
+const reader=new FileReader();
+
+reader.onload=function(e){
+const originalData=e.target.result;
+const tempImg=new Image();
+
+tempImg.onload=function(){
+const maxSize=1200;
+let w=tempImg.width;
+let h=tempImg.height;
+
+if(w>maxSize || h>maxSize){
+const ratio=Math.min(maxSize/w,maxSize/h);
+w=Math.round(w*ratio);
+h=Math.round(h*ratio);
+}
+
+const canvas=document.createElement("canvas");
+canvas.width=w;
+canvas.height=h;
+
+const ctx=canvas.getContext("2d");
+ctx.drawImage(tempImg,0,0,w,h);
+
+/* Se comprime para que WebView/localStorage no falle con imágenes pesadas. */
+const finalData=canvas.toDataURL("image/jpeg",0.92);
+
+const wheelEl=document.getElementById("wheel");
+const emptyEl=document.getElementById("emptyWheel");
+const resultEl=document.getElementById("result");
+
+wheelEl.src=finalData;
+wheelEl.style.display="block";
+emptyEl.style.display="none";
+resultEl.textContent="Imagen cargada correctamente";
+
+try{
+localStorage.setItem("ruleta_imagen_base",finalData);
+}catch(err){
+console.warn("No se pudo guardar la imagen:",err);
+alert("La imagen se cargó, pero era muy pesada para guardarse permanente. Usa una imagen más liviana si quieres que quede guardada al cerrar.");
+}
+};
+
+tempImg.onerror=function(){
+alert("No se pudo leer la imagen. Prueba con JPG o PNG.");
+};
+
+tempImg.src=originalData;
+};
+
+reader.onerror=function(){
+alert("No se pudo cargar el archivo seleccionado.");
+};
+
+reader.readAsDataURL(file);
+}
+
+function removeImage(){
+if(!confirm("¿Quitar la imagen guardada de la ruleta?"))return;
+
+localStorage.removeItem("ruleta_imagen_base");
+
+const wheelEl=document.getElementById("wheel");
+const emptyEl=document.getElementById("emptyWheel");
+const resultEl=document.getElementById("result");
+
+wheelEl.removeAttribute("src");
+wheelEl.style.display="none";
+emptyEl.style.display="flex";
+resultEl.textContent="Imagen quitada";
+}
+
+function parsePrizeText(text){
+return String(text)
+.replace(/\\n/g,"\n")
+.split(/\r?\n/)
+.map(line=>line.trim())
+.filter(line=>line.length>0);
+}
+function loadPrizeConfig(){
+const versionKey="ruleta_config_version";
+const currentVersion="estable2_sin_defaults";
+
+if(localStorage.getItem(versionKey)!==currentVersion){
+localStorage.removeItem("ruleta_config_premios");
+localStorage.setItem(versionKey,currentVersion);
+}
+
+const saved=localStorage.getItem("ruleta_config_premios");
+
+if(saved){
+try{
+const data=JSON.parse(saved);
+sectorCount.value=data.sectores || "";
+prizeText.value=(data.premios || []).join("\n");
+premios=data.premios && data.premios.length ? data.premios : [];
+}catch(e){
+sectorCount.value="";
+prizeText.value="";
+premios=[];
+}
+}else{
+sectorCount.value="";
+prizeText.value="";
+premios=[];
+}
+
+previewConfig();
+}
+function previewConfig(){
+const sectorInput=document.getElementById("sectorCount");
+const prizeBox=document.getElementById("prizeText");
+const previewBox=document.getElementById("preview");
+
+if(!sectorInput || !prizeBox || !previewBox) return;
+
+const sectores=parseInt(sectorInput.value,10)||0;
+const lista=parsePrizeText(prizeBox.value);
+
+let html=`<b>Sectores:</b> ${sectores || "-"}<br><b>Premios detectados:</b> ${lista.length}<br>`;
+
+if(sectores===0 && lista.length===0){
+html+=`<span class="warning">Aún no configurado.</span>`;
+}else if(sectores>0 && !sectorEsValido(sectores)){
+html+=`<span class="warning">Ese número de sectores no está dentro de los números válidos para trabajar bien.</span>`;
+}else if(sectores===lista.length && sectores>0){
+html+=`<span class="ok">Correcto: cada sector tiene un premio.</span>`;
+}else{
+html+=`<span class="warning">Atención: la cantidad de sectores y premios no coincide.</span>`;
+}
+
+html+="<ol>";
+lista.forEach(p=>html+=`<li>${escapeHtml(p)}</li>`);
+html+="</ol>";
+previewBox.innerHTML=html;
+}
+function savePrizeConfig(){
+const sectores=parseInt(sectorCount.value,10)||0;
+const lista=parsePrizeText(prizeText.value);
+
+if(sectores<=0){
+alert("Ingresa una cantidad válida de sectores.");
+return;
+}
+
+if(!sectorEsValido(sectores)){
+alert("Ese número de sectores no está dentro de los números válidos para trabajar bien. Usa uno de estos: "+sectoresValidosRuleta.join(", "));
+return;
+}
+
+if(lista.length===0){
+alert("Ingresa por lo menos un premio.");
+return;
+}
+
+if(lista.length!==sectores&&!confirm("La cantidad de premios no coincide con los sectores. ¿Guardar de todas maneras?"))return;
+
+premios=lista;
+localStorage.setItem("ruleta_config_premios",JSON.stringify({sectores,premios:lista}));
+localStorage.setItem("ruleta_config_version","estable2_sin_defaults");
+previewConfig();
+document.getElementById("result").textContent="Configuración guardada";
+}
+function clearPrizeConfig(){
+if(!confirm("¿Borrar la configuración de premios?"))return;
+
+localStorage.removeItem("ruleta_config_premios");
+localStorage.removeItem("ruleta_config_version");
+
+const sectorInput=document.getElementById("sectorCount");
+const prizeBox=document.getElementById("prizeText");
+const resultBox=document.getElementById("result");
+
+if(sectorInput) sectorInput.value="";
+if(prizeBox) prizeBox.value="";
+
+premios=[];
+
+previewConfig();
+
+if(resultBox) resultBox.textContent="Configuración borrada";
+}
+function escapeHtml(str){return String(str).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
+
+const sectoresValidosRuleta=[1,2,3,4,5,6,8,9,10,12,15,18,20,24,30,36,40,45,50];
+let pinAudio=null;
+let pinClickTimer=null;
+
+function sectorEsValido(n){
+return sectoresValidosRuleta.includes(n);
+}
+
+function prepararAudioPin(){
+if(!pinAudio){
+pinAudio=new Audio("pin.mp3");
+pinAudio.preload="auto";
+pinAudio.volume=0.75;
+}
+}
+
+function golpearPin(){
+const pin=document.getElementById("pinOverlay");
+
+if(pin){
+pin.classList.remove("pinHit");
+void pin.offsetWidth;
+pin.classList.add("pinHit");
+}
+
+if(pinAudio){
+try{
+pinAudio.currentTime=0;
+pinAudio.play().catch(()=>{});
+}catch(e){}
+}
+}
+
+function iniciarClicksPin(duracionMs, sectores, vueltasTotalesAprox){
+clearInterval(pinClickTimer);
+prepararAudioPin();
+
+/*
+  Pin realista:
+  - Inicio y medio: vibración rápida, no intenta marcar cada sector.
+  - Final: cuando faltan aproximadamente 5 sectores, deja la vibración
+    y hace 5 golpes reales más lentos y notorios.
+*/
+const inicioMs=Math.max(0,duracionMs-2550);
+let intervalo=60; // aprox. 16 golpes por segundo, seguro para WebView.
+let inicio=Date.now();
+
+pinClickTimer=setInterval(()=>{
+const transcurrido=Date.now()-inicio;
+
+if(transcurrido>=inicioMs){
+clearInterval(pinClickTimer);
+pinClickTimer=null;
+iniciarClicksFinalesPin();
+return;
+}
+
+golpearPin();
+},intervalo);
+}
+
+function iniciarClicksFinalesPin(){
+/*
+  Últimas 5 secciones:
+  aquí sí debe sentirse como choque real contra cada línea.
+*/
+const tiempos=[0,260,600,1080,1740];
+tiempos.forEach(t=>{
+setTimeout(()=>{
+golpearPin();
+},t);
+});
+}
+
+function detenerClicksPin(){
+if(pinClickTimer){
+clearInterval(pinClickTimer);
+pinClickTimer=null;
+}
+}
+
+
+
+let lastSector=null;
+let seguimientoActivo=false;
+
+function iniciarSeguimientoFinal(winnerIndex, sectores){
+seguimientoActivo=true;
+lastSector=null;
+
+const gradosPorSector=360/sectores;
+
+const sectoresFinales=[];
+for(let i=5;i>=1;i--){
+sectoresFinales.push((winnerIndex - i + sectores) % sectores);
+}
+
+function check(){
+if(!seguimientoActivo) return;
+
+const actual=((rotation % 360)+360)%360;
+const sectorActual=Math.floor(actual/gradosPorSector);
+
+if(sectorActual!==lastSector){
+lastSector=sectorActual;
+
+if(sectoresFinales.includes(sectorActual)){
+golpearPin();
+}
+}
+
+requestAnimationFrame(check);
+}
+
+requestAnimationFrame(check);
+}
+
+function detenerSeguimientoFinal(){
+seguimientoActivo=false;
+}
+
+
+function lanzarCelebracionRealista(){
+const layer=document.getElementById("celebrationLayer");
+if(!layer)return;
+
+layer.innerHTML="";
+
+const colores=["#FFD700","#FF4FD8","#7C3AED","#00D4FF","#FF3B30","#7CFF6B","#FFFFFF","#FF9F1C"];
+const total=170;
+
+/*
+  Mixtura realistic look:
+  sale desde abajo hacia arriba, se abre y luego cae/desaparece.
+*/
+for(let i=0;i<total;i++){
+const piece=document.createElement("div");
+piece.className="confettiPiece";
+
+const size=Math.random()*8+5;
+const startX=50+(Math.random()*22-11); // sale cerca del centro inferior
+const side=(Math.random()<0.5?-1:1);
+const spread=(Math.random()*52+18)*side;
+
+piece.style.width=size+"px";
+piece.style.height=(size*(Math.random()*1.2+1.2))+"px";
+piece.style.left=startX+"vw";
+piece.style.background=colores[Math.floor(Math.random()*colores.length)];
+piece.style.setProperty("--rot",(Math.random()*360)+"deg");
+piece.style.setProperty("--dur",(Math.random()*1.25+1.65)+"s");
+piece.style.setProperty("--x1",spread+"vw");
+piece.style.setProperty("--y1",-(Math.random()*38+42)+"vh");
+piece.style.setProperty("--x2",(spread+(Math.random()*28-14))+"vw");
+piece.style.setProperty("--y2",-(Math.random()*12+8)+"vh");
+piece.style.animationDelay=(Math.random()*0.28)+"s";
+
+layer.appendChild(piece);
+}
+
+const stage=document.querySelector(".stage");
+if(stage){
+stage.classList.remove("winFlash");
+void stage.offsetWidth;
+stage.classList.add("winFlash");
+}
+
+if(navigator.vibrate){
+navigator.vibrate([80,45,90]);
+}
+
+setTimeout(()=>{
+layer.innerHTML="";
+},3600);
+}
+
+
+function getRandomIndex(max){
+if(!Number.isInteger(max) || max<=0){
+throw new Error("Cantidad inválida para sorteo.");
+}
+
+/*
+  Random profesional:
+  Usa crypto.getRandomValues cuando el navegador lo permite.
+  Además evita sesgo de módulo con rejection sampling.
+*/
+if(window.crypto && crypto.getRandomValues){
+const maxUint=0xFFFFFFFF;
+const limite=maxUint - (maxUint % max);
+const array=new Uint32Array(1);
+
+do{
+crypto.getRandomValues(array);
+}while(array[0]>=limite);
+
+return array[0] % max;
+}
+
+/* Respaldo si el WebView no soporta crypto */
+return Math.floor(Math.random()*max);
+}
+
+function spin(){
+if(spinning)return;
+
+const wheel=document.getElementById("wheel");
+const resultBox=document.getElementById("result");
+
+if(wheel.style.display==="none"){
+alert("Primero sube una imagen de ruleta.");
+return;
+}
+
+const sectores=parseInt(document.getElementById("sectorCount").value,10);
+const lista=[...premios];
+
+if(!sectores || sectores<=0){
+alert("Ingresa la cantidad de sectores.");
+return;
+}
+
+if(!sectorEsValido(sectores)){
+alert("Ese número de sectores no está dentro de los números válidos para trabajar bien. Usa uno de estos: "+sectoresValidosRuleta.join(", "));
+return;
+}
+
+if(lista.length===0){
+alert("Configura la lista de premios.");
+return;
+}
+
+if(lista.length!==sectores){
+alert("La lista de premios no coincide con la cantidad de sectores. Premios: "+lista.length+" / Sectores: "+sectores);
+return;
+}
+
+spinning=true;
+
+const winnerIndex=getRandomIndex(lista.length);
+const gradosPorSector=360/lista.length;
+
+/*
+  NUEVA CALIBRACIÓN:
+  La imagen inicial ya tiene el sector 1 centrado bajo el pin.
+  Por eso NO se suma gradosPorSector/2.
+  La lista debe empezar con el premio que se ve arriba al iniciar.
+*/
+const centroDelSector=winnerIndex*gradosPorSector;
+
+const objetivo=(360-centroDelSector)%360;
+const rotacionActual=((rotation%360)+360)%360;
+const ajuste=(objetivo-rotacionActual+360)%360;
+const vueltasExtra=360*6;
+
+rotation+=vueltasExtra+ajuste;
+
+wheel.style.transform=`translateY(var(--wheelDrop)) rotate(${rotation}deg)`;
+resultBox.textContent="Girando...";
+
+iniciarClicksPin(5700, lista.length, 6);
+iniciarSeguimientoFinal(winnerIndex, lista.length);
+
+setTimeout(()=>{
+detenerClicksPin();
+detenerSeguimientoFinal();
+spinning=false;
+resultBox.textContent="Resultado: "+lista[winnerIndex];
+lanzarCelebracionRealista();
+},5700);
+}
+
+createLights();loadSavedImage();loadPrizeConfig();
+</script>
+</body>
+</html>
